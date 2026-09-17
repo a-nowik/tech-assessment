@@ -1,33 +1,17 @@
 # Manual Test Cases – Portfolio Rebalancer
 
-The output of the application is the **number of shares to buy or sell for each security**.
-The test cases below check this output for standard input and for corner cases, and show when the
-target variance can be brought to zero.
-
-## How the output is calculated
-
-```
-variance %            = current % - target %          (negative -> BUY, positive -> SELL)
-shares                = |target % - current %| / 100 * total assets / unit price, rounded DOWN
-variance after trades = post-trade % - target %        (0 = target reached)
-```
-
-- Only whole shares can be traded. Shares are rounded **down**, so the app never trades more than the
-  variance requires (rounding IBM up to 67 would cost $10,050, while selling ORCL brings only $9,900).
-- **Zero target variance** is reached only when the trade value divides exactly by the unit price
-  (TC-03). Otherwise a small variance remains, worth less than one share (TC-01).
+Test cases for the number of shares to buy or sell for each security. The formulas, the rounding rule
+and the assumptions are described in the [README](../../README.md#how-the-app-works).
 
 ## How to execute
 
-1. Run `npm start` and open http://localhost:3000.
+1. Start the app - see [README, step 7](../../README.md#7-start-the-server-for-manual-testing).
 2. Enter the input data. Account ABC is loaded by default; for other portfolios use **Remove** and
    **Add security**.
 3. Click **Calculate**.
 4. Compare the **Action**, **Shares** and **Residual variance %** columns with the expected output.
 
 Input data notation: `SYMBOL target % / current % / unit price`.
-Automated: `UI` = `e2e/ui/rebalance.ui.spec.ts`
-(the automated test names start with the same ID).
 
 ## Standard cases
 
