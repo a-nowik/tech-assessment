@@ -62,6 +62,72 @@ Because only whole shares can be traded, a small residual variance stays:
 IBM ends at 19.9% (-0.1) and ORCL at 20.1% (+0.1). Exactly zero variance is reached only when the
 trade value divides exactly by the unit price (see TC-03 in the manual test cases).
 
+### How to calculate the variance
+
+**1. Variance before the trade**
+
+```
+variance %  =  current %  -  target %          (negative -> BUY, positive -> SELL)
+```
+
+IBM: 10 - 20 = **-10**, ORCL: 30 - 20 = **+10**
+
+**2. Variance after the trade** (the *Residual variance %* column in the app)
+
+```
+value before       = current % / 100 * total assets
+trade value        = shares * unit price
+value after        = value before + trade value     (BUY)
+value after        = value before - trade value     (SELL)
+post-trade %       = value after / total assets * 100
+variance after %   = post-trade %  -  target %
+```
+
+|                    | IBM (BUY 66)                   | ORCL (SELL 45)                 |
+|--------------------|--------------------------------|--------------------------------|
+| Value before       | 10% * 100,000 = $10,000        | 30% * 100,000 = $30,000        |
+| Trade value        | 66 * 150 = $9,900              | 45 * 220 = $9,900              |
+| Value after        | 10,000 **+** 9,900 = $19,900   | 30,000 **-** 9,900 = $20,100   |
+| Post-trade %       | 19,900 / 100,000 * 100 = 19.9% | 20,100 / 100,000 * 100 = 20.1% |
+| **Variance after** | 19.9 - 20 = **-0.1**           | 20.1 - 20 = **+0.1**           |
+
+Total assets do not change - a trade at the market price only swaps shares for cash or the other way.
+
+Short form (same result; `+` for BUY, `-` for SELL):
+
+```
+variance after %  =  variance before %  ±  trade value / total assets * 100
+```
+
+IBM: -10 + 9,900 / 100,000 * 100 = **-0.1**, ORCL: +10 - 9.9 = **+0.1**
+
+In dollars: `variance after $ = variance after % / 100 * total assets` - IBM: -0.1% * 100,000 = **-$100**,
+less than the price of one share ($150), so it cannot be bought.
+
+**3. Cash** (target 0%)
+
+```
+cash    =  total sells - total buys
+cash %  =  cash / total assets * 100
+```
+
+Account ABC: 9,900 - 9,900 = **$0** -> **0%**
+
+**4. Variance of the whole account** (to compare rounding options)
+
+```
+total variance    =  sum of |variance after %| of all securities  +  |cash %|
+largest variance  =  max( |variance after %| of each security, |cash %| )
+```
+
+| Rounding            | IBM | ORCL | Cash          | IBM after | ORCL after | Cash % | Total variance | Largest |
+|---------------------|----:|-----:|--------------:|----------:|-----------:|-------:|---------------:|--------:|
+| **Down** (the app)  | 66  | 45   | $0            | -0.1      | +0.1       | 0      | **0.2**        | **0.1** |
+| Nearest             | 67  | 45   | -$150         | +0.05     | +0.1       | -0.15  | 0.3            | 0.15    |
+
+Rounding to the nearest share looks better for IBM alone, but it needs $150 the account does not have,
+and the whole account ends up further from the target.
+
 ## Assumptions
 
 1. **Whole shares only**, the share count is **rounded down**. The app never buys or sells more than the
