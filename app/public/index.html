@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Rebalancer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1>Portfolio Rebalancer</h1>
+    <p class="subtitle">Account ABC &middot; how many shares to buy or sell to reach the target allocation</p>
+
+    <form id="rebalance-form" novalidate>
+      <label class="field">
+        Total assets ($)
+        <input id="total-assets" type="number" min="0" step="any">
+      </label>
+
+      <div class="table-wrap">
+        <table aria-label="Holdings">
+          <thead>
+            <tr>
+              <th>Security</th>
+              <th>Target %</th>
+              <th>Current %</th>
+              <th>Unit price ($)</th>
+              <th><span class="visually-hidden">Row actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="holdings-body"></tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Total</th>
+              <td data-testid="target-total"></td>
+              <td data-testid="current-total"></td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="buttons">
+        <button type="button" id="add-row">Add security</button>
+        <button type="button" id="load-example">Load example</button>
+        <button type="submit" id="calculate" class="primary">Calculate</button>
+      </div>
+    </form>
+
+    <div id="errors" class="errors" role="alert" hidden>
+      <strong>Please fix the following:</strong>
+      <ul id="errors-list"></ul>
+    </div>
+
+    <section id="results" aria-labelledby="results-heading" hidden>
+      <h2 id="results-heading">Trades</h2>
+      <div class="table-wrap">
+        <table aria-label="Trades to execute">
+          <thead>
+            <tr>
+              <th>Security</th>
+              <th>Target %</th>
+              <th>Current %</th>
+              <th>Variance %</th>
+              <th>Unit price</th>
+              <th>Action</th>
+              <th>Shares</th>
+              <th>Trade value</th>
+              <th>Post-trade %</th>
+              <th>Residual variance %</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+
+      <dl class="summary">
+        <div><dt>Total to buy</dt><dd data-testid="total-buy"></dd></div>
+        <div><dt>Total to sell</dt><dd data-testid="total-sell"></dd></div>
+        <div><dt>Net cash flow</dt><dd data-testid="net-cash"></dd></div>
+      </dl>
+      <p id="cash-warning" class="warning" hidden>
+        Buys cost more than sells bring in &ndash; the account needs extra cash to execute all trades.
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

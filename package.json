@@ -1,9 +1,11 @@
 {
   "name": "tech-assessment",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
+  "private": true,
+  "description": "Technical assessment: portfolio rebalancing app with Playwright UI tests",
+  "scripts": {
+    "start": "node app/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

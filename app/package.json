@@ -1,0 +1,11 @@
+{
+  "name": "rebalancer-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple portfolio rebalancing app - the system under test",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC"
+}

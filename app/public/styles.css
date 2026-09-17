@@ -1,0 +1,164 @@
+:root {
+  --text: #1f2933;
+  --muted: #616e7c;
+  --border: #d9e2ec;
+  --surface: #ffffff;
+  --background: #f5f7fa;
+  --primary: #1f5fa8;
+  --buy: #18794e;
+  --sell: #b42318;
+  --warning-bg: #fff4e5;
+  --error-bg: #fdecec;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem;
+}
+
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.field {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+input {
+  font: inherit;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 6rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  /* Clips absolutely positioned children (.visually-hidden) so they cannot widen the page. */
+  position: relative;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+
+th,
+td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+tfoot td.invalid {
+  color: var(--sell);
+  font-weight: 600;
+}
+
+button {
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.errors {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: var(--error-bg);
+  color: var(--sell);
+}
+
+.errors ul {
+  margin: 0.5rem 0 0;
+}
+
+.action {
+  font-weight: 700;
+}
+
+.action-buy {
+  color: var(--buy);
+}
+
+.action-sell {
+  color: var(--sell);
+}
+
+.action-hold {
+  color: var(--muted);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.summary dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.summary dd {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.warning {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: var(--warning-bg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
