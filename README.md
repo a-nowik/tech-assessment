@@ -225,16 +225,56 @@ largest variance  =  max( |variance after %| of each security, |cash %| )
 | **Down** (the app)  | 66  | 45   | $0            | -0.1      | +0.1       | 0      | **0.2**        | **0.1** |
 | Nearest             | 67  | 45   | -$150         | +0.05     | +0.1       | -0.15  | 0.3            | 0.15    |
 
-Rounding to the nearest share looks better for IBM alone, but it needs $150 the account does not have,
-and the whole account ends up further from the target.
+For account ABC rounding down is the best option: rounding to the nearest share looks better for IBM
+alone, but it needs $150 the account does not have, and the whole account ends up further from the
+target. This is not true for every portfolio - see the next section.
+
+### Rounding strategy
+
+The account is fully invested (cash $0), so **the sells pay for the buys**:
+
+```
+cost of buys  <=  proceeds from sells  +  available cash
+```
+
+**The app rounds every trade down.** It is simple, never trades more shares than the variance requires,
+and gives the best result for account ABC. It is **not the best strategy for every portfolio**:
+
+- **Rounding down does not guarantee enough cash**, because the sells are rounded down too.
+  Example: buy $10,000 / $100 = 100 shares ($10,000), sell $10,000 / $3,000 = 3.33 -> 3 shares ($9,000)
+  -> **$1,000 missing**. The app shows this as a negative *Net cash flow* with a warning.
+- **Rounding to the nearest share can be better.** Example: account ABC with IBM at **$149.50**
+  (10,000 / 149.5 = 66.89 shares) and ORCL at **$219** (10,000 / 219 = 45.66 shares):
+
+| Buy IBM / sell ORCL        | Buys       | Sells   | Cash                   | Total variance |
+|----------------------------|-----------:|--------:|-----------------------:|---------------:|
+| 66 / 45 (down - the app)   | $9,867     | $9,855  | -$12 (not enough)      | 0.29           |
+| 66 / 46                    | $9,867     | $10,074 | +$207                  | 0.414          |
+| 67 / 45                    | $10,016.50 | $9,855  | -$161.50 (not enough)  | 0.323          |
+| **67 / 46** (nearest)      | $10,016.50 | $10,074 | **+$57.50**            | **0.148**      |
+
+Here rounding down cannot be executed, while rounding to the nearest share can - and it is the
+closest to the target.
+
+| Strategy                          | Pros                                                         | Cons                                                        |
+|-----------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|
+| All trades down (**the app**)     | Simple, never trades more than the variance requires         | Can run out of cash, not always the smallest variance       |
+| Sells up, buys down               | Always enough cash                                           | Leaves unused cash, bigger variance (ABC: 66 / 46 = 0.44)   |
+| **Optimization** (recommended)    | Smallest variance that the available cash can pay for        | More complex with many securities                           |
+
+**Recommendation:** our test app keeps the simple round-down rule, but a real rebalancer should use
+**optimization**: for every security try rounding down and up, and pick the combination with the
+smallest total variance (cash included) for which `cost of buys <= proceeds from sells + available cash`.
+The rounding rule is a business decision and should be confirmed with the Product Owner.
 
 ## Assumptions
 
-1. **Whole shares only**, the share count is **rounded down**. The app never buys or sells more than the
-   variance requires. Rounding to the nearest share would buy 67 IBM for $10,050 while selling ORCL
-   brings only $9,900 - money the fully invested account does not have.
-2. Because of (1), **exactly zero variance is usually not reachable**; the app shows the post-trade %
-   and the residual variance instead.
+1. **Whole shares only.** The app **rounds every trade down** and assumes the sells are executed first
+   and pay for the buys. This is a simplification of the test app - rounding down can run out of cash
+   and does not always give the smallest variance, so an **optimization** of the rounding is worth
+   using instead (see [Rounding strategy](#rounding-strategy)).
+2. Because only whole shares are traded, **exactly zero variance is usually not reachable**; the app
+   shows the post-trade % and the residual variance instead.
 3. If the trade is worth **less than one share**, the action is **HOLD** with 0 shares.
 4. **100% vested** = everything is invested, there is no extra cash. Sells and buys happen at the given
    unit prices; no fees, taxes, lot sizes or price changes.
