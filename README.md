@@ -20,20 +20,122 @@ e2e/                                # tests
 playwright.config.ts
 ```
 
-## How to run
+## Getting started (step by step)
 
-Requirements: Node.js 20+.
+### 1. Install the tools
+
+| Tool                     | Version            | Check                  | Download                        |
+|--------------------------|--------------------|------------------------|---------------------------------|
+| Git                      | any                | `git --version`        | https://git-scm.com/downloads   |
+| Node.js (includes npm)   | 20 or newer (LTS)  | `node -v` and `npm -v` | https://nodejs.org              |
+
+Nothing else has to be installed by hand - the app has no dependencies, and Playwright and TypeScript
+are installed by npm in step 3.
+
+### 2. Clone the repository
 
 ```bash
-npm install
-npx playwright install chromium   # browser, only needed once
-
-npm start                   # app at http://localhost:3000
-npm test                    # all tests (starts the app automatically)
-npm run report              # open the HTML report of the last run
+git clone https://github.com/a-nowik/tech-assesment.git
+cd tech-assesment
 ```
 
-Use a different port with `PORT=3100 npm test`.
+The repository (and the folder created by `git clone`) is called `tech-assesment` - with one "s".
+
+### 3. Install the project dependencies
+
+```bash
+npm ci
+```
+
+Installs the exact versions from `package-lock.json` into `node_modules`
+(Playwright test runner, TypeScript, Node.js types).
+
+### 4. Install the browser for Playwright
+
+```bash
+npx playwright install chromium
+```
+
+On Linux, if Chromium does not start because of missing system libraries:
+
+```bash
+npx playwright install --with-deps chromium   # asks for the sudo password
+```
+
+### 5. Run the automated tests
+
+```bash
+npm test
+```
+
+- **You do not have to start the server.** Playwright starts it (`node app/server.js` on
+  http://localhost:3000), runs the tests and stops the server at the end.
+- The output ends with `12 passed`.
+- If a server is **already running** on port 3000 (e.g. from step 7), Playwright uses it and leaves it
+  running. Restart that server after changing the app code, otherwise the tests check the old code.
+
+Useful variants:
+
+```bash
+npx playwright test --headed      # watch the browser while the tests run
+npx playwright test --ui          # Playwright UI mode: pick tests, see every step
+npx playwright test -g "TC-01"    # run one test case
+npm run typecheck                 # check TypeScript types (Playwright does not do it)
+```
+
+### 6. Open the test report
+
+```bash
+npm run report
+```
+
+Opens the HTML report of the last run in the browser. Stop the report with `Ctrl + C`.
+
+### 7. Start the server for manual testing
+
+```bash
+npm start
+```
+
+- The terminal shows `Rebalancer running at http://localhost:3000`.
+- Open **http://localhost:3000** and follow `e2e/manual/manual.test.cases.md`.
+- Keep this terminal open - the server runs as long as the command runs. Use a second terminal for
+  other commands.
+- Do not open `app/public/index.html` directly from disk (`file:///...`). Without the server,
+  **Calculate** only shows *"Could not reach the server"*.
+
+### 8. Stop the server
+
+In the terminal where the server runs, press **`Ctrl + C`**.
+
+If that terminal is closed or the server runs in the background, stop the process that listens on
+port 3000:
+
+```bash
+# Linux / macOS
+lsof -ti tcp:3000 -sTCP:LISTEN              # shows the process ID (PID)
+kill $(lsof -ti tcp:3000 -sTCP:LISTEN)      # stops it
+
+# Linux, alternative
+fuser -k 3000/tcp
+```
+
+```powershell
+# Windows (PowerShell)
+Get-NetTCPConnection -LocalPort 3000 -State Listen          # OwningProcess = PID
+Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000 -State Listen).OwningProcess
+```
+
+Check: http://localhost:3000 does not open any more.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `Error: listen EADDRINUSE: address already in use :::3000` | A server is already running on port 3000. Use it, stop it (step 8) or start on another port: `PORT=3100 npm start` (PowerShell: `$env:PORT=3100; npm start`). |
+| `Executable doesn't exist at ...` when running the tests | The browser is missing - run step 4. |
+| *"Could not reach the server"* on the page | The server is not running or the page was opened from disk - see step 7. |
+| `node: command not found` or an old Node.js version | Install Node.js 20 or newer - see step 1. |
 
 ## How the app works
 
