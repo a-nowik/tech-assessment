@@ -35,11 +35,9 @@ are installed by npm in step 3.
 ### 2. Clone the repository
 
 ```bash
-git clone https://github.com/a-nowik/tech-assesment.git
-cd tech-assesment
+git clone https://github.com/a-nowik/tech-assessment.git
+cd tech-assessment
 ```
-
-The repository (and the folder created by `git clone`) is called `tech-assesment` - with one "s".
 
 ### 3. Install the project dependencies
 
