@@ -237,35 +237,70 @@ The account is fully invested (cash $0), so **the sells pay for the buys**:
 cost of buys  <=  proceeds from sells  +  available cash
 ```
 
-**The app rounds every trade down.** It is simple, never trades more shares than the variance requires,
-and gives the best result for account ABC. It is **not the best strategy for every portfolio**:
+Every strategy trades whole shares; they differ in what happens to the fraction. They are listed
+**from the best result to the worst**; the app uses the third one.
 
-- **Rounding down does not guarantee enough cash**, because the sells are rounded down too.
-  Example: buy $10,000 / $100 = 100 shares ($10,000), sell $10,000 / $3,000 = 3.33 -> 3 shares ($9,000)
-  -> **$1,000 missing**. The app shows this as a negative *Net cash flow* with a warning.
-- **Rounding to the nearest share can be better.** Example: account ABC with IBM at **$149.50**
-  (10,000 / 149.5 = 66.89 shares) and ORCL at **$219** (10,000 / 219 = 45.66 shares):
+**1. Optimization - the best result (recommended)**
+
+For every security try rounding down and up, and pick the combination with the smallest total variance
+that the cash can pay for. It is the only strategy that is always executable and always as close to the
+target as whole shares allow. The price is the extra logic - with many securities it becomes a small
+optimization problem.
+
+- Account ABC: picks **66 IBM / 45 ORCL** (the same as rounding down) - cash $0, total variance 0.2.
+- Account ABC with IBM at $149.50 and ORCL at $219: picks **67 / 46** (the same as rounding to the
+  nearest share) - cash +$57.50, total variance 0.148.
+
+**2. Rounding to the nearest share - the most exact per security**
+
+Every security ends up at most **half a share** away from its target, instead of almost a whole share.
+It can, however, **buy more than the variance requires**, and then the sells do not pay for the buys.
+
+- Account ABC: IBM 66.67 -> **67** = $10,050, ORCL 45.45 -> **45** = $9,900. **$150 missing**, so the
+  trades cannot be executed - even though IBM alone would be closer to its target (+0.05 instead
+  of -0.1).
+- Account ABC with IBM at **$149.50** (10,000 / 149.5 = 66.89 shares) and ORCL at **$219**
+  (10,000 / 219 = 45.66 shares) it works and wins:
 
 | Buy IBM / sell ORCL        | Buys       | Sells   | Cash                   | Total variance |
 |----------------------------|-----------:|--------:|-----------------------:|---------------:|
-| 66 / 45 (down - the app)   | $9,867     | $9,855  | -$12 (not enough)      | 0.29           |
-| 66 / 46                    | $9,867     | $10,074 | +$207                  | 0.414          |
-| 67 / 45                    | $10,016.50 | $9,855  | -$161.50 (not enough)  | 0.323          |
 | **67 / 46** (nearest)      | $10,016.50 | $10,074 | **+$57.50**            | **0.148**      |
+| 66 / 45 (down - the app)   | $9,867     | $9,855  | -$12 (not enough)      | 0.29           |
+| 67 / 45                    | $10,016.50 | $9,855  | -$161.50 (not enough)  | 0.323          |
+| 66 / 46                    | $9,867     | $10,074 | +$207                  | 0.414          |
 
-Here rounding down cannot be executed, while rounding to the nearest share can - and it is the
+Here rounding down cannot be executed at all, while rounding to the nearest share can - and it ends up
 closest to the target.
 
-| Strategy                          | Pros                                                         | Cons                                                        |
-|-----------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|
-| All trades down (**the app**)     | Simple, never trades more than the variance requires         | Can run out of cash, not always the smallest variance       |
-| Sells up, buys down               | Always enough cash                                           | Leaves unused cash, bigger variance (ABC: 66 / 46 = 0.44)   |
-| **Optimization** (recommended)    | Smallest variance that the available cash can pay for        | More complex with many securities                           |
+**3. Rounding every trade down - what the app does**
 
-**Recommendation:** our test app keeps the simple round-down rule, but a real rebalancer should use
-**optimization**: for every security try rounding down and up, and pick the combination with the
-smallest total variance (cash included) for which `cost of buys <= proceeds from sells + available cash`.
-The rounding rule is a business decision and should be confirmed with the Product Owner.
+Simple, and it never trades more shares than the variance requires. For account ABC it is also the best
+executable option (66 / 45, cash $0). But the **sells are rounded down too**, so the cash is not
+guaranteed either.
+
+- Buy $10,000 / $100 = 100 shares ($10,000), sell $10,000 / $3,000 = 3.33 -> 3 shares ($9,000):
+  **$1,000 missing**, because the sell side loses a third of a $3,000 share while the buy side loses
+  nothing. The app reports it as a negative *Net cash flow* with a warning.
+
+**4. Sells up, buys down - always safe, worst result**
+
+The sells bring at least the exact amount and the buys cost at most the exact amount, so there is
+**always enough cash**. The leftover cash stays uninvested, so the account ends up furthest from
+the target.
+
+- Account ABC: **66 IBM / 46 ORCL** - cash +$220 (0.22% not invested), total variance 0.44.
+
+| # | Strategy                        | Result                                  | Cash                  | Complexity |
+|---|---------------------------------|-----------------------------------------|-----------------------|------------|
+| 1 | **Optimization** (recommended)  | Best possible with whole shares         | Always enough         | Highest    |
+| 2 | Nearest share                   | Most exact per security - when it fits  | May be missing        | Low        |
+| 3 | All trades down (**the app**)   | Good, never trades more than needed     | May be missing        | Lowest     |
+| 4 | Sells up, buys down             | Worst - leaves cash uninvested          | Always enough         | Low        |
+
+**Recommendation:** the test app keeps the simple round-down rule, but a real rebalancer should use
+**optimization**: pick the rounding with the smallest total variance (cash included) for which
+`cost of buys <= proceeds from sells + available cash`. The rounding rule is a business decision and
+should be confirmed with the Product Owner.
 
 ## Assumptions
 
